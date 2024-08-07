@@ -1,8 +1,8 @@
 const otpGenerator = require('otp-generator');
 const otpModel = require('../models/otp');
+const userModel = require('../models/user')
 const axios = require('axios');
-// const twilio = require('twilio');
-// const sendOtpToMobileNumber = require('../services/fastToSms');
+
 require('dotenv').config();
 
 const sendOtp = async (req, res) => {
@@ -12,24 +12,17 @@ const sendOtp = async (req, res) => {
         const cDate = new Date();
         const mobileNumber = req.body.mobileNumber;
 
+        const existingUser = await userModel.findOne({ mobileNumber });
+
+        if (existingUser) {
+            return res.status(400).json({ status: "failed", msg: "User already exists" });
+        }
+
         await otpModel.findOneAndUpdate({ mobileNumber },
             { otp, otpExpiration: new Date(cDate.getTime()) },
             { upsert: true, new: true, setDefaultsOnInsert: true }
         );
 
-        // const accountSid = process.env.ACCOUNT_SID;
-        // const authToken = process.env.AUTH_TOKEN;
-        // const client = twilio(accountSid, authToken);
-
-        // const message = await client.messages.create({
-        //     body: `${otp}`,
-        //     from: "+15515254882",
-        //     to: `+91${req.body.mobileNumber}`,
-        // });
-
-        // console.log(message.body);
-
-        // sent otp on mobile number
         await axios.get('https://www.fast2sms.com/dev/bulkV2', {
             params: {
                 authorization: process.env.FAST2SMS_API_KEY,

@@ -3,7 +3,7 @@ const app = express();
 const http = require('http').Server(app);
 const cors = require('cors');
 require('dotenv').config();
-const { connectDB } = require('./config/database')
+const { connectDB } = require('./config/database');
 
 const corsOptions = {
   origin: '*',
@@ -21,13 +21,14 @@ const vehicleRoutes = require('./routes/vehicle');
 app.use(express.json()); // for parsing application/json
 
 app.use('/api/auth', authRoutes);
-app.use('/api', vehicleRoutes);
 app.use('/api/otp', otpRoutes);
+app.use('/api/vehicle', vehicleRoutes);
+
+app.use('/', (req, res) => res.json({ message: 'Welcome to CO2e Calculator' }));
 
 
-app.use('/', (req, res) => res.json({ 'message': 'Welcome to CO2e Calculator' }));
 
-
-http.listen(3000, function () {
+http.listen(process.env.PORT || 4500, function () {
   console.log('Server is running');
-})
+});
+
